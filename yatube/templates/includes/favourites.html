@@ -1,0 +1,12 @@
+{% if post.comments.count %}
+  <p>
+    <a href="{% url 'posts:post_detail' post.id %}">
+      Всего комментариев: {{ post.comments.count }}
+    </a>
+  </p>
+{% else %}
+  <p>Комментариев нет</p>
+{% endif %}
+<a href="{% url 'posts:post_detail' post.id %}">
+  подробная информация
+</a>
