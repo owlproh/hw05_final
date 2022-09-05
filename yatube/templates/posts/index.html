@@ -3,10 +3,10 @@
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
   <article>
-    {% include "includes/switcher.html" %}
+    {% include "includes/switcher.html" with index=True %}
     {% for post in page_obj %}
       {% include "includes/bl_posts.html" %}
     {% endfor %}
     {% include "includes/paginator.html" %}
   </article>
-{% endblock %}
+{% endblock content %}

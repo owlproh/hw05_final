@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from ..models import Group, Post, Comment, Follow
 
 User = get_user_model()
 size_str: int = 15
@@ -66,3 +66,60 @@ class GroupModelTest(TestCase):
         group = GroupModelTest.group
         object_name = group.title
         self.assertEqual(object_name, str(group))
+
+
+class CommentModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_creator = User.objects.create(username="user_cr")
+        cls.post = Post.objects.create(
+            text="Текст тестового поста",
+            author=cls.user_creator,
+        )
+        cls.comment = Comment.objects.create(
+            post=cls.post,
+            author=cls.user_creator,
+            text="Текст тестового комментария к посту",
+        )
+
+    def test_CommentModel_object_name(self):
+        """Проверяем, что у модели Comment корректно работает __str__."""
+        object_name = self.comment.text
+        self.assertEqual(object_name, str(self.comment.text))
+
+    def test_CommentModel_verbose_name(self):
+        """Проверяем наличие verbose_name"""
+        comment = CommentModelTest.comment
+        verboses = {
+            "text": "Текст комментария",
+            "author": "Автор комментария",
+            "post": "Пост",
+        }
+        for field, expected_value in verboses.items():
+            with self.subTest(field=field):
+                self.assertEqual(
+                    comment._meta.get_field(field).verbose_name, expected_value
+                )
+
+
+class FollowModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.following = User.objects.create(
+            username="following_man")
+        cls.follower = User.objects.create(
+            username="follower_man")
+        cls.follow = Follow.objects.create(
+            user=cls.follower,
+            author=cls.following
+        )
+
+    def test_FollowModel(self):
+        """Проверяем модель подписок."""
+        follow = FollowModelTest.follow
+        author = follow.author
+        follower = follow.user
+        self.assertEqual(author, self.following)
+        self.assertEqual(follower, self.follower)

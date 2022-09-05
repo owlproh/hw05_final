@@ -109,6 +109,9 @@ class PostsViewTests(TestCase):
             reverse(
                 "posts:post_edit", kwargs={"post_id": self.post.pk}
             ): "posts/create_post.html",
+            reverse(
+                "posts:follow_index"
+            ): "posts/follow.html",
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -127,6 +130,13 @@ class PostsViewTests(TestCase):
                     self.assertRedirects(
                         self.guest_client.get(reverse_name),
                         "/auth/login/?next=%2Fcreate%2F"
+                    )
+                elif reverse_name == reverse(
+                    "posts:follow_index"
+                ):
+                    self.assertRedirects(
+                        self.guest_client.get(reverse_name),
+                        "/auth/login/?next=%2Ffollow%2F"
                     )
                 else:
                     cache.clear()
@@ -315,7 +325,7 @@ class PaginatorViewsTest(TestCase):
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
-class FollowViewsTest(TestCase):
+class FollowCommentViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -331,6 +341,11 @@ class FollowViewsTest(TestCase):
             text="Текст тестового поста following",
             author=cls.following,
         )
+        cls.comment = Comment.objects.create(
+            post=cls.following_post,
+            author=cls.following,
+            text="Текст тестового комментария"
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -338,6 +353,7 @@ class FollowViewsTest(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_follower = Client()
         self.authorized_follower.force_login(self.follower)
         self.authorized_following = Client()
@@ -401,3 +417,65 @@ class FollowViewsTest(TestCase):
             "posts:follow_index"))
         self.assertEqual(
             response_following.context['page_obj'].paginator.count, 0)
+
+    def test_guest_follow(self):
+        """Guest пытается подписаться."""
+        response_follow = self.guest_client.get(reverse(
+            "posts:profile_follow",
+            kwargs={"username": "following_man"}
+        ))
+        self.assertRedirects(
+            response_follow,
+            "/auth/login/?next=%2Fprofile%2Ffollowing_man%2Ffollow%2F"
+        )
+
+    def test_guest_unfollow(self):
+        """Guest пытается отписаться."""
+        response_unfollow = self.guest_client.get(reverse(
+            "posts:profile_unfollow",
+            kwargs={"username": "following_man"}
+        ))
+        self.assertRedirects(
+            response_unfollow,
+            "/auth/login/?next=%2Fprofile%2Ffollowing_man%2Funfollow%2F"
+        )
+
+    def test_following_follow_himself(self):
+        """Автор пытается подписаться на себя."""
+        follow_count = Follow.objects.count()
+        response_follow = self.authorized_following.get(reverse(
+            "posts:profile_follow",
+            kwargs={"username": self.following}
+        ))
+        self.assertRedirects(
+            response_follow,
+            reverse("posts:profile",
+                    kwargs={"username": self.following}
+                    )
+        )
+        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.following,
+                author=self.following
+            ).exists()
+        )
+
+    def test_comment(self):
+        """Тестируем коммент от автора."""
+        self.authorized_following.get(reverse(
+            "posts:add_comment", kwargs={"post_id": 1})
+        )
+        response_comment = Comment.objects.get(id=1)
+        self.assertEqual(response_comment.text, self.comment.text)
+        self.assertEqual(response_comment.author, self.comment.author)
+
+    def test_guest_comment(self):
+        """Тестируем комменты от гостя."""
+        response = self.guest_client.get(reverse(
+            "posts:add_comment", kwargs={"post_id": 1})
+        )
+        self.assertRedirects(
+            response,
+            "/auth/login/?next=%2Fposts%2F1%2Fcomment%2F"
+        )
