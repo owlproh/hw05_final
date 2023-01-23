@@ -1,3 +1,96 @@
-# hw05_final
+# Социальная сеть Yatube
+Yatube - социальная сеть, с возможностью создавать учётную запись, публиковать посты, создавать группы, оставлять комментарии 
+и подписываться на любимых авторов.
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+## Описание проекта:
+В проекте социальная сеть Yatube реализованы следующие функции:
+
+- регистрация новых пользователей
+- администрирование, управление пользователями
+- изменение и восстановления пароля через email
+- добавление/удаление текстовых постов, постов с картинками и возможность присвоить пост к тематической группе
+- возможность редактирования постов есть только у автора поста
+- возможность пользователям оставлять комментарии к постам
+- подписка/отписка на понравившихся авторов
+- создание тематических групп
+- создание отдельной ленты с постами авторов, на которых подписан пользователь
+- создание отдельной ленты постов по группам
+- паджинация
+
+## Технологии:
+
+- [Python 3.7+](https://www.python.org/downloads/)
+- [Django 2.2.16](https://www.djangoproject.com/download/)
+- [Faker 12.0.1](https://pypi.org/project/Faker/)
+- [mixer 7.1.2](https://pypi.org/project/mixer/)
+- [Pillow 9.2.0](https://pypi.org/project/Pillow/)
+- [pytest-django 4.4.0](https://pypi.org/project/pytest-django/)
+- [pytest-pythonpath 0.7.3](https://pypi.org/project/pytest-pythonpath/)
+- [pytest 6.2.4](https://pypi.org/project/pytest/)
+- [requests 2.26.0](https://pypi.org/project/requests/)
+- [six 1.16.0](https://pypi.org/project/six/)
+- [sorl-thumbnail 12.7.0](https://pypi.org/project/sorl-thumbnail/)
+
+## Запуск проекта (Dev-режим):
+
+- Клонировать репозиторий и перейти в него в командной строке:
+```
+git clone https://github.com/owlproh/hw05_final.git
+cd hw05_final
+```
+
+- Cоздать и активировать виртуальное окружение:
+```
+py -m venv venv
+source venv/Scripts/activate
+```
+
+- Установить зависимости:
+```
+pip install -r requirements.txt
+```
+
+- Перейти в папку с файлом ```manage.py```:
+```
+cd yatube
+```
+
+- Выполнить миграции:
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+- Создать суперпользователя:
+```
+python manage.py createsuperuser
+```
+- Запустить проект:
+```
+python manage.py runserver
+```
+
+После создания суперпользователя и запуска проекта, вам будет доступна админка
+```/admin```, из которой можно управлять проектом, добавлять и удалять группы, посты,
+пользователей и т.д.
+
+## Тесты:
+
+### Покрытие тестами:
+
+Покрытие тестами выполнено с помощью ```Unittest```. 
+Тесты покрывают следующие области:
+- тесты комментариев
+- тесты подписок на авторов
+- тесты моделей БД, view функций, форм, URL проекта
+- тесты загрузки изображений
+- тесты кэширования страниц
+
+- Тесты запускаются командой:
+```
+python manage.py test
+```
+или: ```pytest```
+
+## Автор
+[Прохоренко Святослав](http://github.com/owlproh)
